@@ -1,0 +1,29 @@
+application:
+  users:
+    errors:
+      - code: EMAIL_REPEATED_ERROR
+        status: 400
+        message: El correo ya registrado.
+      - code: UNEXPECTED_ERROR
+        status: 500
+        # TODO: IGNORE - change to custom error message.
+        message: Error al procesar los datos.
+openapi:
+  users:
+    base-path: /api/v1
+
+logging.level.org.hibernate.SQL: DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+spring:
+  datasource:
+    url: jdbc:h2:tcp://localhost/~/users
+    username: sa
+    password:
+  jpa:
+    show-sql: true
+server:
+  error:
+    whitelabel:
+      enabled: false
+    include-message: always

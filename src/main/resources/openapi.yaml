@@ -1,0 +1,156 @@
+openapi: 3.0.3
+info:
+  title: Registro de Usuarios
+  description: Servicio de Creacion de Usuarios.
+  version: 1.0.0
+  contact:
+    name: java developer
+    url: 'http://www.mycompany.com'
+    email: java@mycompany.com
+servers:
+  - url: 'http://localhost:8080/api/v1'
+    description: Local server.
+paths:
+  /users:
+    post:
+      operationId: createUser
+      tags:
+        - User
+      summary: Realiza la creacion de un usuario.
+      description: |
+        Endpoint que tiene la funcionalidad de realizar el registro de un usuario.
+        ### 2. Backends
+        | Backend | Tipo | Descripción |
+        |---------|------|-------------|
+        | H2 | BD | Base datos. |
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreationRequest'
+        required: true
+      responses:
+        '201':
+          description: Se realizo el registro de transaccion exitosamente.
+          content:
+            application/stream+json:
+              schema:
+                $ref: '#/components/schemas/UserCreationResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreationResponse'
+        '400':
+          description: Datos incorrectos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserException'
+        '500':
+          description: Error al realizar el registro del usuario.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserException'
+# 1) Define the security scheme type (HTTP bearer)
+components:
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    # optional, arbitrary value for documentation purposes
+  schemas:
+    PhoneRequest:
+      title: Phone
+      description: Informacion de telefono del usuario.
+      type: object
+      properties:
+        number:
+          type: string
+          description: Numero de telefono del usuario.
+          pattern: '[0-9]{7}'
+          example: '1234567'
+        cityCode:
+          type: string
+          description: Codigo de ciuad de telefono.
+          pattern: '[0-9]'
+          example: '1'
+        countryCode:
+          type: string
+          description: Codigo de pais de telefono.
+          pattern: '[0-9]{2}'
+          example: '57'
+      required:
+        - number
+        - cityCode
+        - countryCode
+    UserCreationRequest:
+      title: User
+      description: Informacion de creacion del usuario.
+      type: object
+      properties:
+        name:
+          type: string
+          description: Nombre completo del usuario.
+          example: 'Juan Rodriguez'
+        email:
+          description: Email del usuario.
+          type: string
+          format: email
+          example: 'juan@rodriguez.org'
+        password:
+          type: string
+          description: Password del usuario - Una Mayuscula, letras minúsculas, y dos numeros.
+          # pattern: ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\d)[a-zA-Z\d]{4,}$
+          # https://riptutorial.com/regex/example/18997/a-password-containing-at-least-2-uppercase--1-lowercase--2-digits-and-is-of-length-of-at-least-10
+          pattern: ^(?=.{4,}$)(?=(?:.*?[A-Z]){1})(?=.*?[a-z])(?=(?:.*?[0-9]){2}).*$
+          example: '1hunteR2'
+        phones:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhoneRequest'
+      required:
+        - name
+        - email
+        - password
+        - phones
+    UserCreationResponse:
+      title: Entidad
+      description: Entidad creada.
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 06f85cf2-a4e2-4cba-b3d0-a5701e2274d1
+        created:
+          type: string
+          format: date-time
+          example: '2019-07-15T08:30:00Z'
+        modified:
+          type: string
+          format: date-time
+          example: '2020-07-15T08:30:00Z'
+        lastLogin:
+          type: string
+          format: date-time
+          # nullable: true
+          example: '2021-07-15T08:30:00Z'
+        token:
+          type: string
+          example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InJoaEBteWNvbXBhbnkuY29tIn0=.Z'
+        active:
+          type: boolean
+          example: true
+    UserException:
+      title: UserException
+      description: Datos del error.
+      type: object
+      properties:
+        message:
+          description: Mensaje de error.
+          type: string
+          example: 'El correo ya registrado'
+
+# 2) Apply the security globally to all operations
+security:
+  - bearerAuth: []         # use the same name as above

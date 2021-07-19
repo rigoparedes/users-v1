@@ -1,0 +1,69 @@
+plugins {
+	id 'org.springframework.boot' version '2.5.2'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+	id 'org.openapi.generator' version '5.2.0'
+}
+
+group = 'users'
+version = '1.0.0-SNAPSHOT'
+sourceCompatibility = '11'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'com.h2database:h2'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.projectreactor:reactor-test'
+
+	// validation
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// openapi
+	implementation 'io.springfox:springfox-swagger2:2.8.0'
+	implementation 'org.webjars:swagger-ui:3.14.2'
+	implementation 'io.swagger:swagger-annotations:1.5.14'
+	implementation 'com.google.code.findbugs:jsr305:3.0.2'
+	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+	implementation 'org.openapitools:jackson-databind-nullable:0.2.1'
+	implementation 'javax.validation:validation-api'
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+	implementation 'org.mapstruct:mapstruct:1.4.2.Final'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.4.2.Final'
+}
+
+openApiGenerate {
+  generatorName = "spring"
+  inputSpec = "$rootDir/src/main/resources/openapi.yaml".toString()
+  ignoreFileOverride = "$rootDir/.openapi-generator-ignore".toString()
+  apiPackage = "com.mycompany.users.adapter.input.web"
+  modelPackage = "com.mycompany.users.adapter.input.web.model"
+  configOptions = [
+    dateLibrary: "java8",
+		basePackage: "com.mycompany.users",
+		configPackage: "com.mycompany.users.configuration",
+    reactive: "true",
+    useTags: "true"
+  ]
+}
+
+compileJava.dependsOn tasks.openApiGenerate
+sourceSets.main.java.srcDir "${openApiGenerate.outputDir.get()}/src/main/java"
+
+test {
+	useJUnitPlatform()
+}
